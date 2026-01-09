@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UnifiedNftCard } from './UnifiedNftCard';
 import { Flame, Star, Loader2, SatelliteDish } from 'lucide-react';
+import { BurnEffect } from './BurnEffect';
 import { useCrazyCubeGame, type NFTGameData } from '@/hooks/useCrazyCubeGame';
 import { usePerformanceContext } from '@/hooks/use-performance-context';
 import { Badge } from '@/components/ui/badge';
@@ -305,7 +306,7 @@ export const BurnCard = React.memo(function BurnCard({
     try {
       const freshData = await getNFTGameData(tokenId);
       setData(freshData);
-    } catch (error) {}
+    } catch (error) { }
 
     setDialogOpen(true);
   };
@@ -343,7 +344,7 @@ export const BurnCard = React.memo(function BurnCard({
     // CRITICAL: Validate contract addresses
     const expectedGameContract = SECURITY_CONFIG.CONTRACTS.GAME_CONTRACT;
     const expectedCRAAContract = SECURITY_CONFIG.CONTRACTS.CRAA_TOKEN;
-    
+
     if (!validateContractAddress(expectedGameContract)) {
       toast({
         title: 'Security Error',
@@ -352,7 +353,7 @@ export const BurnCard = React.memo(function BurnCard({
       });
       return;
     }
-    
+
     // Check CRAA balance before proceeding
     const fee = calcFee();
     const feeWei = parseEther(fee);
@@ -377,26 +378,26 @@ export const BurnCard = React.memo(function BurnCard({
     try {
       setIsProcessing(true);
       setStep('approvingCRAA');
-      
+
       // CRITICAL: Show exact amount being approved to prevent approve-∞ attacks
       const approvalAmount = fee.replace(/,/g, '');
-      toast({ 
-        title: 'Approving CRAA', 
+      toast({
+        title: 'Approving CRAA',
         description: `Amount: ${approvalAmount} CRAA (NOT unlimited)`,
         variant: 'default',
       });
-      
+
       await approveCRAA(approvalAmount);
       setStep('approvingNFT');
-      toast({ 
-        title: 'Approving NFT', 
+      toast({
+        title: 'Approving NFT',
         description: `Token #${tokenId} (specific token only)`,
         variant: 'default',
       });
       await approveNFT(tokenId);
       setStep('burning');
-      toast({ 
-        title: 'Burning NFT', 
+      toast({
+        title: 'Burning NFT',
         description: `Token #${tokenId}`,
         variant: 'default',
       });
@@ -407,9 +408,13 @@ export const BurnCard = React.memo(function BurnCard({
         title: 'NFT burned',
         description: `Sent to graveyard. Claim after ${waitMinutes} minutes`,
       });
-      if (onActionComplete) onActionComplete();
-      const updated = await getNFTGameData(tokenId);
-      setData(updated);
+
+      // Smooth update: wait for burn effect to finish, then update data
+      setTimeout(async () => {
+        const updated = await getNFTGameData(tokenId);
+        setData(updated);
+        if (onActionComplete) onActionComplete();
+      }, 3500); // Wait for burn effect (3000ms) + small buffer
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? DOMPurify.sanitize(error.message) : 'Failed to burn NFT';
@@ -447,10 +452,8 @@ export const BurnCard = React.memo(function BurnCard({
             />
           </div>
 
-          {/* burn overlay */}
-          {burnFX && (
-            <div className='absolute inset-0 burn-overlay pointer-events-none rounded-lg' />
-          )}
+          {/* Epic multi-stage burn effect */}
+          <BurnEffect stage={step} onComplete={() => setBurnFX(false)} />
 
           {/* Wait period selector */}
           <div className='flex justify-center gap-1 mt-2'>
@@ -518,14 +521,14 @@ export const BurnCard = React.memo(function BurnCard({
               data && Number(data.lockedCRAA) === 0
                 ? 'w-full bg-gray-400 text-gray-700 cursor-not-allowed'
                 : craaBalance &&
-                    data &&
-                    (() => {
-                      try {
-                        return parseEther(calcFee()) > balWei;
-                      } catch {
-                        return false;
-                      }
-                    })()
+                  data &&
+                  (() => {
+                    try {
+                      return parseEther(calcFee()) > balWei;
+                    } catch {
+                      return false;
+                    }
+                  })()
                   ? 'w-full bg-red-400 text-white cursor-not-allowed'
                   : 'w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white'
             }
@@ -548,46 +551,20 @@ export const BurnCard = React.memo(function BurnCard({
             onClick={startBurn}
           >
             {craaBalance &&
-            data &&
-            (() => {
-              try {
-                const feeWei = parseEther(calcFee());
-                return feeWei > balWei;
-              } catch {
-                return false;
-              }
-            })()
+              data &&
+              (() => {
+                try {
+                  const feeWei = parseEther(calcFee());
+                  return feeWei > balWei;
+                } catch {
+                  return false;
+                }
+              })()
               ? t('burn.interface.insufficientCRAA', 'Insufficient CRAA')
               : t('burn.interface.burnButton', 'Burn')}
           </Button>
         </div>
       </div>
-      {/* Global burn animation style & keyframes */}
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <style jsx global>{`
-        @keyframes burnFade {
-          0% {
-            opacity: 0;
-            filter: brightness(2) saturate(1.5);
-          }
-          10% {
-            opacity: 0.9;
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0.8) rotate(2deg);
-          }
-        }
-        .burn-overlay {
-          background: radial-gradient(
-            circle at center,
-            rgba(255, 200, 0, 0.6) 0%,
-            rgba(255, 0, 0, 0.5) 40%,
-            transparent 80%
-          );
-          animation: burnFade 2.4s forwards ease-out;
-        }
-      `}</style>
       {/* Confirmation dialog */}
       {data && (
         <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -596,7 +573,7 @@ export const BurnCard = React.memo(function BurnCard({
               <AlertDialogTitle className='flex items-center text-red-300 text-lg'>
                 <Flame className='w-5 h-5 mr-2' /> {t('sections.burn.feeBox.confirmDialog.title', `Burn NFT #${tokenId}`).replace('{tokenId}', tokenId)}
               </AlertDialogTitle>
-              
+
               {/* NFT Earnings Display */}
               {data.lockedCRAA && Number(data.lockedCRAA) > 0 && (
                 <div className='bg-gradient-to-r from-orange-500/20 to-red-500/20 border-2 border-orange-400/50 rounded-lg p-4 mb-4 text-center'>
@@ -611,7 +588,7 @@ export const BurnCard = React.memo(function BurnCard({
                   </div>
                 </div>
               )}
-              
+
               <div className='space-y-2 text-orange-50'>
                 <div className='bg-yellow-900/30 border border-yellow-500/50 rounded-md p-3 mb-3'>
                   <div className='text-yellow-200 font-semibold mb-1'>

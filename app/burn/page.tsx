@@ -266,8 +266,8 @@ export default function BurnPage() {
                   nft={nft}
                   index={idx}
                   onActionComplete={() => {
-                    refreshPage();
-                    // Removed repeated refetch call after 3 seconds
+                    // Smooth update handled inside BurnCard after burn effect completes
+                    // No jarring page refresh needed
                   }}
                 />
               ))}

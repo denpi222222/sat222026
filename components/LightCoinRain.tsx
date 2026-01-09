@@ -18,7 +18,7 @@ export const LightCoinRain = ({ theme = 'gold' }: LightCoinRainProps) => {
             id: i,
             left: `${Math.random() * 100}%`,
             delay: Math.random() * 5,
-            duration: 4 + Math.random() * 4, // 4-8 seconds duration (slower & smoother)
+            duration: 4.8 + Math.random() * 4.8, // 4.8-9.6 seconds (20% slower than before)
             size: 20 + Math.random() * 20, // 20-40px
         }));
     }, []);
@@ -55,7 +55,10 @@ export const LightCoinRain = ({ theme = 'gold' }: LightCoinRainProps) => {
                     <img
                         src={coinImage}
                         alt="coin"
-                        className="w-full h-full object-contain opacity-60 drop-shadow-[0_0_10px_rgba(234,179,8,0.3)]"
+                        className={`w-full h-full object-contain opacity-60 ${theme === 'blue'
+                                ? 'drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]'
+                                : 'drop-shadow-[0_0_10px_rgba(234,179,8,0.3)]'
+                            }`}
                         style={{ display: 'block' }}
                         onError={(e) => {
                             // Fallback to gold if blue fails
