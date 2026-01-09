@@ -394,29 +394,23 @@ export const BurnCard = React.memo(function BurnCard({
         variant: 'default',
       });
       await approveNFT(tokenId);
-      setStep('burning');
       toast({
-        title: 'Burning NFT',
-        description: `Token #${tokenId}`,
+        title: 'Approvals Complete',
+        description: `Ready to burn Token #${tokenId}. Please sign the final transaction.`,
         variant: 'default',
       });
-      // Animation is synced with blockchain transactions:
-      // Step 1 (approvingCRAA) = sparks begin
-      // Step 2 (approvingNFT) = fire builds up  
-      // Step 3 (burning) = full burn effect
+
       await burnNFT(tokenId, waitMinutes);
+
+      // START FINAL ANIMATION ONLY AFTER THIRD TX SIGNED/CONFIRMED
+      setStep('burning');
       toast({
-        title: 'NFT burned',
-        description: `Sent to graveyard. Claim after ${waitMinutes} minutes`,
+        title: 'NFT Burning',
+        description: `Token #${tokenId} is being reduced to ashes...`,
+        variant: 'default',
       });
 
-      // After 4 seconds, refresh data and remove NFT from view
-      setTimeout(async () => {
-        const updated = await getNFTGameData(tokenId);
-        setData(updated);
-        setStep('idle'); // Reset step AFTER animation completes
-        if (onActionComplete) onActionComplete();
-      }, 4000); // 4 second delay for full animation
+      // We'll let BurnEffect call us back when the 4s animation is done
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? DOMPurify.sanitize(error.message) : 'Failed to burn NFT';
@@ -428,7 +422,6 @@ export const BurnCard = React.memo(function BurnCard({
       setStep('idle'); // Reset on error
     } finally {
       setIsProcessing(false);
-      // NOTE: setStep('idle') moved to setTimeout for smooth animation
     }
   });
 
@@ -461,7 +454,21 @@ export const BurnCard = React.memo(function BurnCard({
             </div>
 
             {/* Epic multi-stage burn effect - positioned OVER the card */}
-            <BurnEffect stage={step} />
+            <BurnEffect
+              stage={step}
+              onComplete={async () => {
+                // This is called after the 4s 'burning' animation
+                const updated = await getNFTGameData(tokenId);
+                setData(updated);
+                setStep('idle');
+                if (onActionComplete) onActionComplete();
+
+                toast({
+                  title: 'NFT Burned Successfully',
+                  description: `Token #${tokenId} sent to graveyard.`,
+                });
+              }}
+            />
           </div>
 
           {/* Wait period selector */}

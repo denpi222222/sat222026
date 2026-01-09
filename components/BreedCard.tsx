@@ -220,8 +220,8 @@ export const BreedCard = React.memo(function BreedCard({
                   </span>
                 </div>
                 {/* Warning text below */}
-                <div className='absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap'>
-                  <div className='bg-black/80 text-red-300 text-sm font-bold px-3 py-1 rounded-full border border-red-500/50'>
+                <div className='absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-full flex justify-center'>
+                  <div className='bg-black/80 text-red-300 text-[10px] md:text-xs font-bold px-2 py-1 rounded-lg border border-red-500/50 leading-tight text-center max-w-[120px] md:max-w-[140px] shadow-xl'>
                     ⚠️ {t('sections.breed.guide.penalty', 'Star will be lost!')}
                   </div>
                 </div>

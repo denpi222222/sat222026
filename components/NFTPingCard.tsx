@@ -34,7 +34,7 @@ import {
 import { parseEther, formatEther } from 'viem';
 import { useMobile } from '@/hooks/use-mobile';
 import { getColor, getLabel } from '@/lib/rarity';
-// CoinBurst removed - animation simplified
+import { CoinBurst } from './CoinBurst';
 import { useTranslation } from 'react-i18next';
 import { usePerformanceContext } from '@/hooks/use-performance-context';
 import { useNetwork } from '@/hooks/use-network';
@@ -76,6 +76,7 @@ function NFTPingCardComponent({
   const [gameData, setGameData] = useState<NFTGameData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showBurst, setShowBurst] = useState(false);
   const [earnings, setEarnings] = useState<any>(null);
   const { t } = useTranslation();
   const chainId = useChainId();
@@ -303,6 +304,7 @@ function NFTPingCardComponent({
     try {
       setIsProcessing(true);
       await pingNFT(tokenIdDec);
+      setShowBurst(true);
       toast({ title: t('ping.sentFor', `Ping sent for #${tokenIdDec}`) });
       // refetch data
       const updated = await getNFTGameData(tokenIdDec);
@@ -625,6 +627,12 @@ function NFTPingCardComponent({
             </Button>
 
           </div>
+          {/* Coin burst effect */}
+          <CoinBurst
+            trigger={showBurst}
+            onComplete={() => setShowBurst(false)}
+            count={isMobile ? 12 : 20}
+          />
         </div>
       </Card>
     </motion.div>
