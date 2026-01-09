@@ -1,0 +1,638 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import {
+  Heart,
+  Flame,
+  Coins,
+  SatelliteDish,
+  Skull,
+  ArrowRightLeft,
+} from 'lucide-react';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+import { useTranslation } from 'react-i18next';
+import { TabNavigation } from '@/components/tab-navigation';
+import { NeonTitle } from '@/components/NeonTitle';
+import { SparkRain } from '@/components/SparkRain';
+import { ReactiveAura } from '@/components/ReactiveAura';
+import { WalletConnectNoSSR as WalletConnect } from '@/components/web3/wallet-connect.no-ssr';
+
+import { useAccount } from 'wagmi';
+import { usePerformanceContext } from '@/hooks/use-performance-context';
+import { useNetwork } from '@/hooks/use-network';
+import { NetworkSwitchProgress } from '@/components/NetworkSwitchProgress';
+
+
+const UserNFTsPreview = dynamic(
+  () => import('@/components/UserNFTsPreview').then(m => m.UserNFTsPreview),
+  { ssr: false }
+);
+
+// Dynamic imports of heavy animations with conditional loading
+const CubeAnimation = dynamic(
+  () =>
+    import('@/components/cube-animation').then(m => ({
+      default: m.CubeAnimation,
+    })),
+  { ssr: false }
+);
+const FireAnimation = dynamic(
+  () =>
+    import('@/components/fire-animation').then(m => ({
+      default: m.FireAnimation,
+    })),
+  { ssr: false }
+);
+const CoinsAnimation = dynamic(
+  () =>
+    import('@/components/coins-animation').then(m => ({
+      default: m.CoinsAnimation,
+    })),
+  { ssr: false }
+);
+
+const ParticleEffect = dynamic(
+  () =>
+    import('@/components/particle-effect').then(m => ({
+      default: m.ParticleEffect,
+    })),
+  { ssr: false }
+);
+
+export default function HomePage() {
+  // Use translation hook
+  const { t } = useTranslation();
+  const { isLiteMode, isMobile, isWeakDevice } = usePerformanceContext();
+
+  const { isConnected: connected } = useAccount();
+  const { isApeChain, isSwitching, switchAttempts, forceSwitchToApeChain } =
+    useNetwork();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  // Always show all effects
+  const shouldShowParticles = true;
+  const particleCount = 15;
+  const animationIntensity = 1.0;
+
+  useEffect(() => {
+    // Ensure we're on client side
+    setIsClient(true);
+
+    // Set a maximum loading time to prevent infinite loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // Animation variants
+  const animationVariants = {
+    lite: {
+      hover: { scale: 1.01 },
+      tap: { scale: 0.99 },
+      transition: { duration: 0.1 },
+    },
+    full: {
+      hover: { scale: 1.02, y: -2 },
+      tap: { scale: 0.98 },
+      transition: { duration: 0.2, type: 'spring' as const, stiffness: 400 },
+    },
+  };
+
+  const currentVariant = animationVariants.full;
+
+  // Always animate
+  const shouldAnimate = true;
+
+  // Helper to render main CTA buttons that require ApeChain
+  const renderActionButton = (
+    href: string,
+    label: string,
+    extra?: React.ReactNode
+  ) => {
+    if (!isApeChain) {
+      return (
+        <Button
+          onClick={() => {
+            void forceSwitchToApeChain();
+          }}
+          className='neon-button w-full h-12 text-base font-semibold bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500'
+        >
+          🔄 Switch to ApeChain
+        </Button>
+      );
+    }
+    return (
+      <Link href={href} className='relative z-10 mt-auto block'>
+        <Button className='neon-button w-full flex items-center justify-center'>
+          {extra}
+          {label}
+        </Button>
+      </Link>
+    );
+  };
+
+  // Rendering loading screen
+  if (isLoading || !isClient) {
+    return (
+      <div className='flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 px-4'>
+        {/* Glow + spinner + logo */}
+        <div className='relative mb-8'>
+          <div className='absolute inset-0 w-32 h-32 md:w-40 md:h-40 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 rounded-full bg-cyan-500/10 blur-2xl' />
+          <div className='w-28 h-28 md:w-36 md:h-36 rounded-full border-2 border-cyan-400/20 border-t-cyan-400/80 animate-spin' />
+          <div className='absolute inset-0 flex items-center justify-center'>
+            <Image
+              src='/favicon.ico'
+              alt='CrazyCube Logo'
+              width={128}
+              height={128}
+              className='object-contain drop-shadow-[0_0_12px_rgba(56,189,248,.45)]'
+              sizes='(max-width: 768px) 35vw, 128px'
+            />
+          </div>
+        </div>
+
+        {/* Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className='text-center text-3xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-200'
+        >
+          {t?.('loading', 'Loading...')}
+        </motion.div>
+
+        {/* Subtitle with gentle pulse and dots */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 1.6, repeat: Number.POSITIVE_INFINITY }}
+          className='mt-2 text-center text-sm md:text-base text-cyan-200/80 max-w-[22rem]'
+        >
+          {t?.('loadingSubtitle', 'Preparing your CrazyCube experience')}
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ duration: 1.6, repeat: Number.POSITIVE_INFINITY, delay: 0.2 }}
+          >
+            …
+          </motion.span>
+        </motion.p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className='min-h-screen mobile-content-wrapper bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative'
+      style={{
+        minHeight: '100vh',
+        position: 'relative',
+        zIndex: 1,
+        overflow: 'visible',
+      }}
+    >
+      {/* Global spark rain overlay (disabled on mobile to avoid layout shifts) */}
+      {!isMobile && <SparkRain />}
+      {/* Adding particle effect - reduced quantity */}
+      {shouldShowParticles && !isMobile && (
+        <ParticleEffect
+          count={particleCount}
+          colors={['#22d3ee', '#0ea5e9', '#3b82f6', '#0284c7']}
+          speed={animationIntensity}
+          size={isMobile ? 3 : 4}
+        />
+      )}
+
+      {/* Noise texture for background */}
+      <div className='absolute inset-0 bg-blue-noise opacity-5 mix-blend-soft-light'></div>
+
+      {/* Header */}
+      <header className='relative z-10 mobile-header-fix mobile-safe-layout px-4 py-2'>
+        <div className='mobile-header-spacing'>
+          <div className='flex items-center justify-between w-full'>
+            <div className='flex items-center flex-shrink-0'>
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: [0.9, 1.1, 0.9], rotate: [0, 5, -5, 0] }}
+                transition={{
+                  duration: 4,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: 'easeInOut',
+                }}
+                className='mr-3 w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 relative'
+              >
+                <Image
+                  src='/favicon.ico'
+                  alt='CrazyCube Logo'
+                  width={80}
+                  height={80}
+                  className='object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]'
+                  priority={true}
+                />
+              </motion.div>
+              <div className='flex-1 min-w-0 relative'>
+                {/* SVG glow under the logo */}
+                <svg
+                  className='absolute left-0 top-1/2 -translate-y-1/2 w-full h-[110%] pointer-events-none select-none'
+                  viewBox='0 0 600 120'
+                  fill='none'
+                  xmlns='http://www.w3.org/2000/svg'
+                  style={{ filter: 'blur(16px)', zIndex: 0 }}
+                >
+                  <ellipse
+                    cx='300'
+                    cy='60'
+                    rx='240'
+                    ry='34'
+                    fill='#1e90ff'
+                    fillOpacity='0.18'
+                  />
+                  <ellipse
+                    cx='300'
+                    cy='60'
+                    rx='160'
+                    ry='20'
+                    fill='#3ab0ff'
+                    fillOpacity='0.22'
+                  />
+                  <ellipse
+                    cx='300'
+                    cy='60'
+                    rx='90'
+                    ry='10'
+                    fill='#3ab0ff'
+                    fillOpacity='0.32'
+                  />
+                </svg>
+                <NeonTitle
+                  title={t('home.title', 'CrazyCube')}
+                  subtitle={t('home.subtitle', 'Where cubes cry and joke!')}
+                />
+              </div>
+            </div>
+
+            {/* Wallet connection */}
+            <div className='flex flex-col items-end gap-2 flex-shrink-0'>
+              <WalletConnect />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className='relative z-10 container mx-auto px-4 py-16'>
+        {/* Tab navigation */}
+        <div className='mb-16'>
+          <div data-ignite-target className='hidden' />
+          <TabNavigation />
+        </div>
+
+        {/* Hero section with 3D animation */}
+        <div className='flex flex-col items-center justify-center mb-24'>
+          <div
+            className={`w-full relative ${isMobile ? 'h-[260px]' : 'h-[560px]'}`}
+          >
+            <CubeAnimation desktopScale={1.4} />
+          </div>
+        </div>
+
+        {/* balance info hidden per new design */}
+
+        {/* Network status and wallet connection section removed per latest design */}
+
+        {/* Network Switch Progress */}
+        {connected && (
+          <div className='mb-16'>
+            <NetworkSwitchProgress
+              isSwitching={isSwitching}
+              switchAttempts={switchAttempts}
+              maxAttempts={5}
+              isApeChain={isApeChain}
+              onForceSwitch={forceSwitchToApeChain}
+            />
+          </div>
+        )}
+
+        {/* User NFTs Preview */}
+        <div className='mb-16'>
+          <UserNFTsPreview />
+        </div>
+
+
+
+
+        {/* Main Grid - 3x2 Layout */}
+        <div
+          className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12'
+        >
+          {/* Breed Section - CUBE - OPTIMIZED */}
+          <motion.div
+            {...(shouldAnimate && {
+              whileHover: currentVariant.hover,
+              whileTap: currentVariant.tap,
+              transition: currentVariant.transition,
+            })}
+            className='crypto-card relative overflow-hidden bg-gradient-to-br from-pink-500/80 via-fuchsia-500/70 to-rose-400/80 p-6 flex flex-col min-h-[280px] border-2 border-pink-400/40 shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] hover:border-pink-400/60 transition-all duration-300'
+          >
+            {/* Neon reactive aura for Breed */}
+            <ReactiveAura tint='fuchsia' intensity={1.1} />
+            {/* Animated flying red hearts */}
+            {(
+              <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <motion.div
+                    key={`heart-${i}`}
+                    className='absolute text-pink-400/80'
+                    style={{
+                      left: `${10 + Math.random() * 80}%`,
+                      top: `${10 + Math.random() * 80}%`,
+                    }}
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{
+                      opacity: [0, 0.7, 0],
+                      scale: [0.7, 1.3, 0.7],
+                      y: [-30, 30, -30],
+                    }}
+                    transition={{
+                      duration: 3.5 + Math.random() * 2.5,
+                      repeat: Number.POSITIVE_INFINITY,
+                      delay: Math.random() * 3,
+                    }}
+                  >
+                    <Heart className='w-5 h-5' fill='currentColor' />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            <div className='flex items-center mb-4 relative z-10'>
+              <Heart
+                className='w-8 h-8 text-pink-400 mr-3'
+                fill='currentColor'
+              />
+              <h2 className='heading-3 crypto-title text-white holo-underline'>
+                {t('sections.breed.title', 'Breed NFTs (Cube Love!)')}
+              </h2>
+            </div>
+            <p className='body-text text-slate-100 mb-6 relative z-10 flex-1 font-medium'>
+              {t(
+                'sections.breed.description',
+                'Combine two NFTs to revive from graveyard. Love is in the air!'
+              )}
+            </p>
+            <div data-ignite-target>
+              {renderActionButton(
+                '/breed',
+                t('sections.breed.button', 'Breed NFTs')
+              )}
+            </div>
+
+            {/* Pulsating pink glow */}
+            <motion.div
+              className='absolute inset-0 bg-gradient-radial from-pink-400/20 to-transparent rounded-2xl'
+              animate={{
+                scale: [1, 1.02, 1],
+                opacity: [0.2, 0.4, 0.2],
+              }}
+              transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
+            />
+          </motion.div>
+
+          {/* Burn Section - FIRE - OPTIMIZED */}
+          <motion.div
+            {...(shouldAnimate && {
+              whileHover: currentVariant.hover,
+              whileTap: currentVariant.tap,
+              transition: currentVariant.transition,
+            })}
+            className='crypto-card relative overflow-hidden bg-gradient-to-br from-orange-900/90 to-red-900/80 p-6 flex flex-col min-h-[280px] border-2 border-orange-500/40 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] hover:border-orange-500/60 transition-all duration-300'
+          >
+            {/* Neon reactive aura for Burn */}
+            <ReactiveAura tint='orange' intensity={1.15} />
+            {/* Add FireAnimation component with reduced intensity */}
+            {<FireAnimation intensity={animationIntensity} />}
+
+            <div className='flex items-center mb-4 relative z-10'>
+              <Flame className='w-8 h-8 text-orange-400 mr-3' />
+              <h2 className='heading-3 crypto-title text-gradient-crypto holo-underline glitch-soft'>
+                {t('sections.burn.title', 'Burn NFT (Roast the Cube!)')}
+              </h2>
+            </div>
+            <p className='body-text crypto-body mb-6 relative z-10 flex-1'>
+              {t(
+                'sections.burn.description',
+                'Burn NFT and earn CRAA tokens. Fiery scene with screaming cubes!'
+              )}
+            </p>
+            <div data-ignite-target>
+              {renderActionButton(
+                '/burn',
+                t('sections.burn.button', 'Burn NFT')
+              )}
+            </div>
+          </motion.div>
+
+          {/* Claim Section - GOLD - OPTIMIZED */}
+          <motion.div
+            {...(shouldAnimate && {
+              whileHover: currentVariant.hover,
+              whileTap: currentVariant.tap,
+              transition: currentVariant.transition,
+            })}
+            className='crypto-card relative overflow-hidden bg-gradient-to-br from-amber-900/90 to-yellow-900/80 p-6 flex flex-col min-h-[280px] border-2 border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:border-amber-500/60 transition-all duration-300'
+          >
+            {/* Neon reactive aura for Claim */}
+            <ReactiveAura tint='amber' intensity={1.1} />
+            {/* Gold coins animation */}
+            {<CoinsAnimation />}
+
+            <div className='flex items-center mb-4 relative z-10'>
+              <Coins className='w-8 h-8 text-yellow-400 mr-3' />
+              <h2 className='heading-3 crypto-title text-gradient-crypto holo-underline glitch-soft'>
+                {t('sections.claim.title', "Claim Rewards")}
+              </h2>
+            </div>
+            <p className='body-text crypto-body mb-6 relative z-10 flex-1'>
+              {t(
+                'sections.claim.description',
+                'Claim your earned CRAA tokens. Sweet sad cube eyes say thanks!'
+              )}
+            </p>
+            <div data-ignite-target>
+              {renderActionButton(
+                '/rewards',
+                t('sections.claim.button', 'Claim')
+              )}
+            </div>
+          </motion.div>
+
+          {/* Ping Section */}
+          <motion.div
+            {...(shouldAnimate && {
+              whileHover: currentVariant.hover,
+              whileTap: currentVariant.tap,
+              transition: currentVariant.transition,
+            })}
+            className='crypto-card relative overflow-hidden bg-gradient-to-br from-cyan-900/90 to-sky-900/80 p-6 flex flex-col min-h-[280px] border-2 border-cyan-500/40 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:border-cyan-500/60 transition-all duration-300'
+          >
+            {/* Neon reactive aura for Ping */}
+            <ReactiveAura tint='sky' intensity={1.05} />
+            {/* Blue coins animation for ping - always show */}
+            <CoinsAnimation />
+
+            <div className='flex items-center mb-4 relative z-10'>
+              <SatelliteDish className='w-8 h-8 text-cyan-400 mr-3' />
+              <h2 className='heading-3 crypto-title text-gradient-crypto holo-underline glitch-soft'>
+                {t('sections.ping.title', 'Ping Cubes')}
+              </h2>
+            </div>
+            <p className='body-text crypto-body mb-6 relative z-10 flex-1'>
+              {t(
+                'sections.ping.description',
+                "Ping daily and earn CRAA. Streak bonus grows! 🔥"
+              )}
+            </p>
+            <div data-ignite-target>
+              {renderActionButton(
+                '/ping',
+                t('sections.ping.button', 'Ping Now')
+              )}
+            </div>
+          </motion.div>
+
+          {/* Graveyard Section */}
+          <motion.div
+            {...(shouldAnimate && {
+              whileHover: currentVariant.hover,
+              whileTap: currentVariant.tap,
+              transition: currentVariant.transition,
+            })}
+            className='crypto-card relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-slate-900/80 p-6 flex flex-col min-h-[280px] border-2 border-gray-500/40 shadow-[0_0_20px_rgba(107,114,128,0.3)] hover:shadow-[0_0_30px_rgba(107,114,128,0.5)] hover:border-gray-500/60 transition-all duration-300'
+          >
+            {/* Subtle aura for Graveyard */}
+            <ReactiveAura tint='purple' intensity={0.6} />
+            <div className='flex items-center mb-4 relative z-10'>
+              <Skull className='w-8 h-8 text-red-400 mr-3' />
+              <h2 className='heading-3 crypto-title text-gradient-crypto holo-underline glitch-soft'>
+                {t('sections.graveyard.title', 'Graveyard')}
+              </h2>
+            </div>
+            <p className='body-text crypto-body mb-6 relative z-10 flex-1'>
+              {t(
+                'sections.graveyard.description',
+                'View your burned cubes and claim CRAA rewards.'
+              )}
+            </p>
+            <div data-ignite-target>
+              {renderActionButton(
+                '/graveyard',
+                t('sections.graveyard.button', 'Enter Graveyard')
+              )}
+            </div>
+
+            {/* Floating skulls */}
+            <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <motion.div
+                  key={`skull-${i}`}
+                  className='absolute text-red-400/30'
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                  }}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{
+                    opacity: [0, 0.5, 0],
+                    scale: [0.5, 1.1, 0.5],
+                    y: [-10, 10, -10],
+                  }}
+                  transition={{
+                    duration: 4 + Math.random() * 3,
+                    repeat: Number.POSITIVE_INFINITY,
+                    delay: Math.random() * 5,
+                  }}
+                >
+                  <Skull className='w-4 h-4' />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Bridge NFT Card */}
+          <motion.div
+            {...(shouldAnimate && {
+              whileHover: currentVariant.hover,
+              whileTap: currentVariant.tap,
+              transition: currentVariant.transition,
+            })}
+            className='crypto-card relative overflow-hidden bg-gradient-to-br from-indigo-900/90 to-purple-900/80 p-6 flex flex-col min-h-[280px] border-2 border-indigo-500/40 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] hover:border-indigo-500/60 transition-all duration-300'
+          >
+            {/* Neon reactive aura for Bridge */}
+            <ReactiveAura tint='purple' intensity={1.0} />
+            <div className='flex items-center mb-4 relative z-10'>
+              <ArrowRightLeft className='w-8 h-8 text-indigo-400 mr-3' />
+              <h2 className='heading-3 crypto-title text-gradient-crypto holo-underline glitch-soft'>
+                {t('sections.bridge.title', 'Bridge NFTs')}
+              </h2>
+            </div>
+            <p className='body-text crypto-body mb-6 relative z-10 flex-1'>
+              {t(
+                'sections.bridge.description',
+                'Transfer CRAA & NFTs between ApeChain & Solana. Fast & secure!'
+              )}
+            </p>
+            <div data-ignite-target className='mt-auto'>
+              {renderActionButton(
+                '/bridge',
+                t('sections.bridge.button', 'Bridge')
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </main>
+
+      {/* Footer - OPTIMIZED */}
+      <motion.footer
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className='text-center text-gray-400 mt-8'
+      >
+        <motion.p
+          {...(shouldAnimate && {
+            whileHover: { scale: 1.05 },
+            transition: { duration: 0.1 },
+          })}
+          className='mt-2 text-sm'
+        >
+          {t(
+            'footer.crashMessage',
+            'If the site crashed, the cube went out for pizza'
+          )}{' '}
+          🍕
+        </motion.p>
+
+        <motion.p
+          {...(shouldAnimate && {
+            whileHover: { color: '#00d4ff' },
+            transition: { duration: 0.1 },
+          })}
+          className='mt-2 text-xs'
+        >
+          {t('footer.madeWith', 'Made with ❤️ for the CrazyCube community')}
+        </motion.p>
+      </motion.footer>
+
+    </div>
+  );
+}
