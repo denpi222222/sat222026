@@ -98,7 +98,6 @@ export const BurnCard = React.memo(function BurnCard({
     poolBps: number;
     burnBps: number;
   }>({ playerBps: 0, poolBps: 0, burnBps: 0 });
-  const [burnFX, setBurnFX] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { isApeChain, requireApeChain } = useNetwork();
   const { isMobile } = useMobile();
@@ -401,20 +400,23 @@ export const BurnCard = React.memo(function BurnCard({
         description: `Token #${tokenId}`,
         variant: 'default',
       });
-      setBurnFX(true);
-      setTimeout(() => setBurnFX(false), 3000);
+      // Animation is synced with blockchain transactions:
+      // Step 1 (approvingCRAA) = sparks begin
+      // Step 2 (approvingNFT) = fire builds up  
+      // Step 3 (burning) = full burn effect
       await burnNFT(tokenId, waitMinutes);
       toast({
         title: 'NFT burned',
         description: `Sent to graveyard. Claim after ${waitMinutes} minutes`,
       });
 
-      // Smooth update: wait for burn effect to finish, then update data
+      // After 4 seconds, refresh data and remove NFT from view
       setTimeout(async () => {
         const updated = await getNFTGameData(tokenId);
         setData(updated);
+        setStep('idle'); // Reset step AFTER animation completes
         if (onActionComplete) onActionComplete();
-      }, 3500); // Wait for burn effect (3000ms) + small buffer
+      }, 4000); // 4 second delay for full animation
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? DOMPurify.sanitize(error.message) : 'Failed to burn NFT';
@@ -423,9 +425,10 @@ export const BurnCard = React.memo(function BurnCard({
         description: errorMessage,
         variant: 'destructive',
       });
+      setStep('idle'); // Reset on error
     } finally {
       setIsProcessing(false);
-      setStep('idle');
+      // NOTE: setStep('idle') moved to setTimeout for smooth animation
     }
   });
 
@@ -435,25 +438,31 @@ export const BurnCard = React.memo(function BurnCard({
         className='flex flex-col h-full min-h-[420px]'
       >
         <div className='flex-1 flex flex-col justify-between'>
-          {/* NFT visual layer */}
-          <div
-            className={`${data && Number(data.lockedCRAA) === 0 ? 'opacity-30 grayscale pointer-events-none' : ''}`}
-          >
-            <UnifiedNftCard
-              imageSrc={nftImageSrc}
-              tokenId={tokenId}
-              title={nft.name || `CrazyCube #${tokenId}`}
-              rarityLabel={
-                data?.rarity ? getLabel(data.rarity) || 'Common' : 'Common'
-              }
-              rarityColorClass={`${data ? getColor(data.rarity) : 'bg-gray-500'} text-white`}
-              widgets={widgets}
-              delay={index * 0.05}
-            />
-          </div>
+          {/* NFT visual layer with burn overlay */}
+          <div className="relative">
+            <div
+              className={`transition-all duration-1000 ${step === 'burning' ? 'scale-75 brightness-[2.5] saturate-200 opacity-0 blur-sm pointer-events-none animate-shake-intense' :
+                step === 'approvingNFT' ? 'brightness-50 saturate-50 grayscale contrast-150 animate-pulse animate-shake-intense' :
+                  step === 'approvingCRAA' ? 'sepia brightness-75 animate-bounce-subtle' :
+                    data && Number(data.lockedCRAA) === 0 ? 'opacity-30 grayscale pointer-events-none' : ''
+                }`}
+            >
+              <UnifiedNftCard
+                imageSrc={nftImageSrc}
+                tokenId={tokenId}
+                title={nft.name || `CrazyCube #${tokenId}`}
+                rarityLabel={
+                  data?.rarity ? getLabel(data.rarity) || 'Common' : 'Common'
+                }
+                rarityColorClass={`${data ? getColor(data.rarity) : 'bg-gray-500'} text-white`}
+                widgets={widgets}
+                delay={index * 0.05}
+              />
+            </div>
 
-          {/* Epic multi-stage burn effect */}
-          <BurnEffect stage={step} onComplete={() => setBurnFX(false)} />
+            {/* Epic multi-stage burn effect - positioned OVER the card */}
+            <BurnEffect stage={step} />
+          </div>
 
           {/* Wait period selector */}
           <div className='flex justify-center gap-1 mt-2'>

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 interface BurnEffectProps {
     stage: 'idle' | 'approvingCRAA' | 'approvingNFT' | 'burning';
@@ -9,29 +9,42 @@ interface BurnEffectProps {
 }
 
 export function BurnEffect({ stage, onComplete }: BurnEffectProps) {
-    const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([]);
+    const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; delay: number; size: number }>>([]);
+    const [smoke, setSmoke] = useState<Array<{ id: number; x: number; y: number; delay: number; size: number }>>([]);
 
-    // Generate particles based on stage
     useEffect(() => {
         if (stage === 'idle') {
             setParticles([]);
+            setSmoke([]);
             return;
         }
 
-        const count = stage === 'approvingCRAA' ? 10 : stage === 'approvingNFT' ? 30 : 60;
-        const newParticles = Array.from({ length: count }).map((_, i) => ({
+        // Sparks/Fire particles
+        const pCount = stage === 'approvingCRAA' ? 15 : stage === 'approvingNFT' ? 40 : 80;
+        const newParticles = Array.from({ length: pCount }).map((_, i) => ({
             id: Math.random(),
             x: Math.random() * 100,
-            y: 100 + Math.random() * 20,
-            delay: Math.random() * 0.5,
+            y: 90 + Math.random() * 20,
+            delay: Math.random() * 2,
+            size: Math.random() * 3 + 1,
         }));
         setParticles(newParticles);
+
+        // Smoke particles
+        const sCount = stage === 'approvingCRAA' ? 20 : stage === 'approvingNFT' ? 40 : 20;
+        const newSmoke = Array.from({ length: sCount }).map((_, i) => ({
+            id: Math.random(),
+            x: Math.random() * 100,
+            y: 80 + Math.random() * 20,
+            delay: Math.random() * 3,
+            size: Math.random() * 20 + 10,
+        }));
+        setSmoke(newSmoke);
     }, [stage]);
 
-    // Trigger onComplete when burning stage finishes
     useEffect(() => {
         if (stage === 'burning' && onComplete) {
-            const timer = setTimeout(onComplete, 3000);
+            const timer = setTimeout(onComplete, 4000); // 4 seconds for final burn
             return () => clearTimeout(timer);
         }
         return undefined;
@@ -41,119 +54,101 @@ export function BurnEffect({ stage, onComplete }: BurnEffectProps) {
 
     return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg z-50">
-            {/* Stage 1: Sparks (approvingCRAA) */}
-            {stage === 'approvingCRAA' && (
-                <>
-                    {particles.map((p) => (
-                        <motion.div
-                            key={p.id}
-                            initial={{ opacity: 0, scale: 0, x: `${p.x}%`, y: `${p.y}%` }}
-                            animate={{
-                                opacity: [0, 1, 0],
-                                scale: [0, 1, 0],
-                                y: [`${p.y}%`, `${p.y - 40}%`],
-                            }}
-                            transition={{
-                                duration: 1.5,
-                                delay: p.delay,
-                                repeat: Infinity,
-                                ease: 'easeOut',
-                            }}
-                            className="absolute w-1 h-1 bg-yellow-400 rounded-full"
-                            style={{
-                                boxShadow: '0 0 4px rgba(255, 200, 0, 0.8)',
-                            }}
-                        />
-                    ))}
-                </>
-            )}
+            {/* Smoke layer (starts from stage 1) */}
+            {smoke.map((s) => (
+                <motion.div
+                    key={s.id}
+                    initial={{ opacity: 0, scale: 0.5, x: `${s.x}%`, y: `${s.y}%` }}
+                    animate={{
+                        opacity: [0, 0.4, 0],
+                        scale: [1, 2.5, 3.5],
+                        y: [`${s.y}%`, `${s.y - 120}%`],
+                        x: [`${s.x}%`, `${s.x + (Math.random() - 0.5) * 40}%`],
+                    }}
+                    transition={{
+                        duration: 3 + Math.random() * 2,
+                        delay: s.delay,
+                        repeat: Infinity,
+                        ease: 'linear',
+                    }}
+                    className="absolute bg-gray-500/20 blur-xl rounded-full"
+                    style={{ width: s.size, height: s.size }}
+                />
+            ))}
 
-            {/* Stage 2: Fire buildup (approvingNFT) */}
-            {stage === 'approvingNFT' && (
-                <>
-                    {particles.map((p) => (
-                        <motion.div
-                            key={p.id}
-                            initial={{ opacity: 0, scale: 0, x: `${p.x}%`, y: `${p.y}%` }}
-                            animate={{
-                                opacity: [0, 0.8, 0],
-                                scale: [0, 2, 0],
-                                y: [`${p.y}%`, `${p.y - 60}%`],
-                            }}
-                            transition={{
-                                duration: 2,
-                                delay: p.delay,
-                                repeat: Infinity,
-                                ease: 'easeOut',
-                            }}
-                            className="absolute rounded-full"
-                            style={{
-                                width: '6px',
-                                height: '6px',
-                                background: 'radial-gradient(circle, rgba(255,150,0,0.9) 0%, rgba(255,50,0,0.4) 100%)',
-                                boxShadow: '0 0 10px rgba(255, 100, 0, 0.6)',
-                            }}
-                        />
-                    ))}
-                    {/* Glow overlay */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 0.3, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute inset-0 bg-gradient-to-t from-orange-500/40 via-red-500/20 to-transparent"
-                    />
-                </>
-            )}
+            {/* Stage 1-2: Sparks and Fire */}
+            {stage !== 'burning' && particles.map((p) => (
+                <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, scale: 0, x: `${p.x}%`, y: `${p.y}%` }}
+                    animate={{
+                        opacity: [0, 1, 0.8, 0],
+                        scale: [0, 1.5, 1, 0],
+                        y: [`${p.y}%`, `${p.y - 70}%`],
+                        x: [`${p.x}%`, `${p.x + (Math.random() - 0.5) * 10}%`],
+                    }}
+                    transition={{
+                        duration: 1.5 + Math.random(),
+                        delay: p.delay,
+                        repeat: Infinity,
+                        ease: 'easeOut',
+                    }}
+                    className={`absolute rounded-full ${stage === 'approvingCRAA' ? 'bg-orange-400' : 'bg-red-500'}`}
+                    style={{
+                        width: p.size,
+                        height: p.size,
+                        boxShadow: `0 0 ${p.size * 3}px ${stage === 'approvingCRAA' ? '#fb923c' : '#ef4444'}`,
+                    }}
+                />
+            ))}
 
-            {/* Stage 3: Epic burning explosion (burning) */}
+            {/* Stage 3: FULL BURNING */}
             {stage === 'burning' && (
                 <>
                     {/* Massive fire wave */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: [0, 1, 0], scale: [0.5, 2.5, 3] }}
-                        transition={{ duration: 2, ease: 'easeOut' }}
-                        className="absolute inset-0"
-                        style={{
-                            background: 'radial-gradient(circle, rgba(255,200,0,0.8) 0%, rgba(255,0,0,0.6) 40%, transparent 70%)',
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{
+                            opacity: [0, 1, 1, 0],
+                            scale: [0.8, 1.2, 1.4, 1.6],
+                            filter: ['brightness(1)', 'brightness(2)', 'brightness(1.5)', 'brightness(3)']
                         }}
+                        transition={{ duration: 4, ease: 'easeIn' }}
+                        className="absolute inset-0 bg-gradient-to-t from-orange-600 via-red-600 to-transparent"
                     />
 
-                    {/* Flying ash particles */}
+                    {/* Debris / Ash particles */}
                     {particles.map((p) => (
                         <motion.div
                             key={p.id}
-                            initial={{ opacity: 0, scale: 0, x: '50%', y: '50%' }}
+                            initial={{ opacity: 0, x: '50%', y: '50%', scale: 1 }}
                             animate={{
                                 opacity: [0, 1, 0],
-                                scale: [0, Math.random() * 2 + 1, 0],
                                 x: [`50%`, `${p.x}%`],
-                                y: [`50%`, `${Math.random() * 100}%`],
-                                rotate: [0, Math.random() * 360],
+                                y: [`50%`, `${Math.random() * -50}%`],
+                                rotate: [0, 720],
+                                scale: [1, 2, 0.5],
                             }}
                             transition={{
-                                duration: 3,
-                                delay: p.delay,
+                                duration: 2.5 + Math.random(),
+                                delay: Math.random() * 0.5,
                                 ease: 'easeOut',
                             }}
-                            className="absolute"
+                            className="absolute bg-gray-900 border border-gray-700"
                             style={{
-                                width: `${Math.random() * 8 + 4}px`,
-                                height: `${Math.random() * 8 + 4}px`,
-                                background: Math.random() > 0.5
-                                    ? 'linear-gradient(45deg, rgba(255,100,0,0.8), rgba(50,50,50,0.9))'
-                                    : 'rgba(80,80,80,0.7)',
-                                borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+                                width: p.size * 2,
+                                height: p.size * 2,
+                                borderRadius: Math.random() > 0.5 ? '2px' : '50%',
                             }}
                         />
                     ))}
 
-                    {/* Screen flash */}
+                    {/* Flash at the peak */}
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 0.8, 0] }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="absolute inset-0 bg-white"
+                        animate={{ opacity: [0, 0.9, 0] }}
+                        transition={{ duration: 0.4, delay: 0.1 }}
+                        className="absolute inset-0 bg-white z-[60]"
                     />
                 </>
             )}

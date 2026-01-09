@@ -247,27 +247,16 @@ export default function BurnPage() {
               </Link>
             </div>
           ) : (
-            <div
-              className={`nft-card-grid relative ${isRefreshing ? 'opacity-50 pointer-events-none' : ''}`}
-            >
-              {isRefreshing && (
-                <div className='absolute inset-0 flex items-center justify-center z-10'>
-                  <div className='bg-red-500/20 backdrop-blur-sm rounded-lg p-4 flex items-center gap-2'>
-                    <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-red-500'></div>
-                    <span className='text-red-200 font-medium'>
-                      {t('sections.burn.updating', 'Updating...')}
-                    </span>
-                  </div>
-                </div>
-              )}
+            <div className="nft-card-grid relative">
+
               {nfts.map((nft, idx) => (
                 <BurnCard
                   key={idx}
                   nft={nft}
                   index={idx}
                   onActionComplete={() => {
-                    // Smooth update handled inside BurnCard after burn effect completes
-                    // No jarring page refresh needed
+                    // Refetch after burn effect completes (called with 3.5s delay from BurnCard)
+                    refetch();
                   }}
                 />
               ))}

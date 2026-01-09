@@ -192,7 +192,7 @@ export default function BreedPage() {
   const [selectedNFTs, setSelectedNFTs] = useState<number[]>([]);
   const [isBreeding, setIsBreeding] = useState(false);
   const [showBreedingEffect, setShowBreedingEffect] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const [isConnecting, setIsConnecting] = useState(false);
   const [selectedNFTsData, setSelectedNFTsData] = useState<{
     [tokenId: number]: { currentStars: number; isActivated: boolean };
@@ -987,19 +987,8 @@ export default function BreedPage() {
               </div>
 
               {/* NFT Grid */}
-              <div
-                className={`nft-card-grid ${isRefreshing ? 'opacity-50 pointer-events-none' : ''}`}
-              >
-                {isRefreshing && (
-                  <div className='absolute inset-0 flex items-center justify-center z-10'>
-                    <div className='bg-pink-500/20 backdrop-blur-sm rounded-lg p-4 flex items-center gap-2'>
-                      <div className='animate-spin rounded-full h-6 w-6 border-b-2 border-pink-500'></div>
-                      <span className='text-pink-200 font-medium'>
-                        {tr('sections.breed.updating', 'Updating...')}
-                      </span>
-                    </div>
-                  </div>
-                )}
+
+              <div className='nft-card-grid'>
                 {userNFTs.map((nft, index) => {
                   const isSelected = selectedNFTs.includes(nft.tokenId);
                   const selectedOrder =

@@ -56,7 +56,7 @@ export function BreedingEffect({ isActive, onComplete }: BreedingEffectProps) {
           animate={{ scale: 1, rotate: 0, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           transition={{ duration: 0.4, ease: 'backOut' }}
-          className='w-48 h-48 object-contain rounded-lg shadow-lg'
+          className={`w-48 h-48 object-contain rounded-lg shadow-lg ${stageIdx >= 3 ? 'animate-shake-intense brightness-125' : ''}`}
         />
 
         {/* Heart pulse behind */}

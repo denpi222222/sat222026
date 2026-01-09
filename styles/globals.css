@@ -1284,3 +1284,47 @@ svg.animate-spin {
   background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.5), transparent);
   margin: 1rem 0;
 }
+
+/* NFT Burn Animations */
+@keyframes bounce-subtle {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 0.5s infinite ease-in-out;
+}
+
+@keyframes shake-intense {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-shake-intense {
+  animation: shake-intense 0.2s infinite;
+}
