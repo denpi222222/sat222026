@@ -551,14 +551,9 @@ export default function BreedPage() {
       ? 'success'
       : 'idle';
 
-  // Watch for breeding events
-  // Start watching for events when on this page
-  useEffect(() => {
-    startWatching();
-    return () => {
-      stopWatching();
-    };
-  }, [startWatching, stopWatching]);
+
+  // (Removed duplicate useEffect - watching is handled at lines 270-277 with connected check)
+
 
   useEffect(() => {
     if (liveRevived.length > 0) {

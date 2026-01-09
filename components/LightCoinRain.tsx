@@ -47,7 +47,7 @@ export const LightCoinRain = () => {
                     }}
                 >
                     <img
-                        src="/images/craa-logo.png"
+                        src="/images/coin-gold.png"
                         alt="coin"
                         className="w-full h-full object-contain opacity-60 drop-shadow-[0_0_10px_rgba(234,179,8,0.3)]"
                         style={{ display: 'block' }}
