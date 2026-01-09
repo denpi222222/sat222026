@@ -171,19 +171,19 @@ export function NFTRevealModal({
                                     transition={{ delay: 0.9, type: 'spring' }}
                                     className="text-center mb-4"
                                 >
-                                    <span className={`text-lg font-bold px-4 py-1 rounded-full ${stars >= 6 ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black' :
-                                            stars >= 5 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' :
-                                                stars >= 4 ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
-                                                    stars >= 3 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
-                                                        stars >= 2 ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white' :
-                                                            'bg-gradient-to-r from-amber-700 to-amber-800 text-white'
+                                    <span className={`text-lg font-bold px-4 py-1 rounded-full ${stars >= 6 ? 'bg-gradient-to-r from-red-500 via-rose-500 to-pink-600 text-white shadow-[0_0_15px_rgba(244,63,94,0.6)] animate-pulse' :
+                                        stars >= 5 ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-black shadow-[0_0_10px_rgba(251,191,36,0.5)]' :
+                                            stars >= 4 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' :
+                                                stars >= 3 ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
+                                                    stars >= 2 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
+                                                        'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
                                         }`}>
-                                        {stars >= 6 ? 'Legendary ✨' :
-                                            stars >= 5 ? 'Epic' :
-                                                stars >= 4 ? 'Rare' :
-                                                    stars >= 3 ? 'Uncommon' :
-                                                        stars >= 2 ? 'Common' :
-                                                            'Basic'}
+                                        {stars >= 6 ? 'Mythic 🌟' :
+                                            stars >= 5 ? 'Legendary ✨' :
+                                                stars >= 4 ? 'Epic' :
+                                                    stars >= 3 ? 'Rare' :
+                                                        stars >= 2 ? 'Uncommon' :
+                                                            'Common'}
                                     </span>
                                 </motion.div>
 

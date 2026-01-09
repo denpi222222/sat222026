@@ -1,136 +1,62 @@
-'use client';
+import React, { useMemo, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
-/**
- * LightCoinRain - Lightweight CSS-based coin animation with images
- * 
- * Uses CSS animations with coin images for maximum compatibility
- * across all devices and browsers.
- */
-
-import { useMemo, useEffect, useState } from 'react';
-import Image from 'next/image';
-
-interface LightCoinRainProps {
-    /** Number of coins. Default 15 for performance */
-    count?: number;
-    /** Coin color theme - determines which image to use */
-    theme?: 'gold' | 'blue' | 'cyan';
-    /** Extra CSS classes */
-    className?: string;
-    /** Disable on mobile for performance */
-    disableOnMobile?: boolean;
-}
-
-export function LightCoinRain({
-    count = 15,
-    theme = 'gold',
-    className = '',
-    disableOnMobile = false,
-}: LightCoinRainProps) {
-    const [isMounted, setIsMounted] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
+export const LightCoinRain = () => {
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setIsMounted(true);
-        setIsMobile(window.innerWidth < 768);
+        setMounted(true);
     }, []);
 
-    // Generate coin positions only on client
+    // Generate fixed coins to prevent hydration mismatch
     const coins = useMemo(() => {
-        if (!isMounted) return [];
-
-        const effectiveCount = isMobile ? Math.min(count, 10) : count;
-
-        return Array.from({ length: effectiveCount }, (_, i) => ({
+        return Array.from({ length: 15 }).map((_, i) => ({
             id: i,
-            left: Math.random() * 100,
-            size: isMobile ? 20 + Math.random() * 16 : 28 + Math.random() * 24, // 20-36px mobile, 28-52px desktop
-            delay: Math.random() * 12, // 0-12s delay
-            duration: 14 + Math.random() * 8, // 14-22s (slow and smooth)
-            opacity: isMobile ? 0.4 + Math.random() * 0.3 : 0.5 + Math.random() * 0.4, // 0.4-0.7 mobile, 0.5-0.9 desktop
+            left: `${Math.random() * 100}%`,
+            delay: Math.random() * 5,
+            duration: 3 + Math.random() * 3, // 3-6 seconds duration (slow & smooth)
+            size: 20 + Math.random() * 20, // 20-40px
         }));
-    }, [isMounted, isMobile, count]);
+    }, []);
 
-    // Don't render on mobile if disabled
-    if (disableOnMobile && isMobile) return null;
-    if (!isMounted) return null;
-
-    // Determine coin image based on theme
-    const getCoinImage = () => {
-        switch (theme) {
-            case 'blue':
-            case 'cyan':
-                return '/images/coin-blue.png';
-            case 'gold':
-            default:
-                return '/images/coin-gold.png';
-        }
-    };
-
-    const coinImage = getCoinImage();
+    if (!mounted) return null;
 
     return (
-        <>
-            <div
-                className={`fixed inset-0 overflow-hidden pointer-events-none z-0 ${className}`}
-                aria-hidden="true"
-            >
-                {coins.map((coin) => (
-                    <span
-                        key={coin.id}
-                        className="absolute light-coin"
-                        style={{
-                            left: `${coin.left}%`,
-                            opacity: coin.opacity,
-                            animationDuration: `${coin.duration}s`,
-                            animationDelay: `${coin.delay}s`,
+        <div className="fixed inset-0 pointer-events-none z-1 overflow-hidden" style={{ zIndex: 1 }}>
+            {coins.map((coin) => (
+                <motion.div
+                    key={coin.id}
+                    initial={{ y: -100, opacity: 0 }}
+                    animate={{
+                        y: ['-10vh', '110vh'],
+                        opacity: [0, 1, 1, 0],
+                        rotate: [0, 360]
+                    }}
+                    transition={{
+                        duration: coin.duration,
+                        repeat: Infinity,
+                        ease: "linear",
+                        delay: coin.delay,
+                        repeatDelay: 0
+                    }}
+                    style={{
+                        position: 'absolute',
+                        left: coin.left,
+                        width: coin.size,
+                        height: coin.size,
+                    }}
+                >
+                    <img
+                        src="/images/craa-logo.png"
+                        alt="coin"
+                        className="w-full h-full object-contain opacity-60 drop-shadow-[0_0_10px_rgba(234,179,8,0.3)]"
+                        style={{ display: 'block' }}
+                        onError={(e) => {
+                            e.currentTarget.style.display = 'none';
                         }}
-                    >
-                        <Image
-                            src={coinImage}
-                            alt=""
-                            width={coin.size}
-                            height={coin.size}
-                            style={{
-                                width: coin.size,
-                                height: coin.size,
-                                display: 'block',
-                            }}
-                            draggable={false}
-                            onError={(e) => {
-                                // Fallback to blue coin if gold fails
-                                if (theme === 'gold') {
-                                    e.currentTarget.src = '/images/coin-blue.png';
-                                }
-                            }}
-                        />
-                    </span>
-                ))}
-            </div>
-
-            <style jsx>{`
-        .light-coin {
-          top: -60px;
-          animation-name: lightCoinFall;
-          animation-timing-function: linear;
-          animation-iteration-count: infinite;
-          will-change: transform;
-          contain: layout style;
-        }
-
-        @keyframes lightCoinFall {
-          0% {
-            transform: translateY(0) rotate(0deg);
-          }
-          100% {
-            transform: translateY(calc(100vh + 100px)) rotate(360deg);
-          }
-        }
-
-
-      `}</style>
-        </>
+                    />
+                </motion.div>
+            ))}
+        </div>
     );
-}
-
-export default LightCoinRain;
+};
