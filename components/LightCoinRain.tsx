@@ -1,7 +1,11 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-export const LightCoinRain = () => {
+interface LightCoinRainProps {
+    theme?: 'gold' | 'blue';
+}
+
+export const LightCoinRain = ({ theme = 'gold' }: LightCoinRainProps) => {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -14,12 +18,14 @@ export const LightCoinRain = () => {
             id: i,
             left: `${Math.random() * 100}%`,
             delay: Math.random() * 5,
-            duration: 3 + Math.random() * 3, // 3-6 seconds duration (slow & smooth)
+            duration: 4 + Math.random() * 4, // 4-8 seconds duration (slower & smoother)
             size: 20 + Math.random() * 20, // 20-40px
         }));
     }, []);
 
     if (!mounted) return null;
+
+    const coinImage = theme === 'blue' ? '/images/coin-blue.png' : '/images/coin-gold.png';
 
     return (
         <div className="fixed inset-0 pointer-events-none z-1 overflow-hidden" style={{ zIndex: 1 }}>
@@ -47,12 +53,15 @@ export const LightCoinRain = () => {
                     }}
                 >
                     <img
-                        src="/images/coin-gold.png"
+                        src={coinImage}
                         alt="coin"
                         className="w-full h-full object-contain opacity-60 drop-shadow-[0_0_10px_rgba(234,179,8,0.3)]"
                         style={{ display: 'block' }}
                         onError={(e) => {
-                            e.currentTarget.style.display = 'none';
+                            // Fallback to gold if blue fails
+                            if (theme === 'blue') {
+                                e.currentTarget.src = '/images/coin-gold.png';
+                            }
                         }}
                     />
                 </motion.div>

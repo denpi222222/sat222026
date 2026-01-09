@@ -39,11 +39,15 @@ export function WalletConnectNoSSR() {
   const [isBlinking, setIsBlinking] = useState(false);
   const pathname = usePathname();
 
-  const { data: craBal } = useBalance({
+  const { data: craBal, refetch: refetchBalance } = useBalance({
     address,
     token: apeChain.contracts.crazyToken.address as `0x${string}`,
     chainId: apeChain.id,
-    query: { enabled: !!address },
+    query: {
+      enabled: !!address,
+      refetchInterval: 10000, // Auto-refresh every 10 seconds
+      refetchOnWindowFocus: true, // Refresh when user returns to tab
+    },
   });
 
   // Blinking effect
@@ -102,23 +106,23 @@ export function WalletConnectNoSSR() {
   const renderGameGuideContent = () => {
     try {
       const content = t('wallet.gameGuideContent');
-      
+
       // If content is a string (fallback), return it as is
       if (typeof content === 'string') {
         return <div className='text-slate-300 whitespace-pre-line text-sm leading-relaxed'>{content}</div>;
       }
-      
+
       // If content is an object, render it structured
       if (typeof content === 'object' && content !== null) {
         const guideContent = content as any; // Type assertion for the structured content
-        
+
         return (
           <div className='text-slate-300 text-sm leading-relaxed space-y-6'>
             {/* Title */}
             <div className='text-lg font-bold text-cyan-400 mb-4'>
               {guideContent.title || '🎮 CrazyCube Game Guide'}
             </div>
-            
+
             {/* Getting Started */}
             {guideContent.gettingStarted && (
               <div className='space-y-2'>
@@ -129,7 +133,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* How to Start */}
             {guideContent.howToStart && (
               <div className='space-y-2'>
@@ -147,7 +151,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* Experience Bonus */}
             {guideContent.experienceBonus && (
               <div className='space-y-2'>
@@ -161,7 +165,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* How to Get CRAA */}
             {guideContent.howToGetCRAA && (
               <div className='space-y-2'>
@@ -172,7 +176,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* How to Burn */}
             {guideContent.howToBurn && (
               <div className='space-y-2'>
@@ -190,7 +194,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* How to Revive */}
             {guideContent.howToRevive && (
               <div className='space-y-2'>
@@ -208,7 +212,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* CRAA in System */}
             {guideContent.crasInSystem && (
               <div className='space-y-2'>
@@ -221,7 +225,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* CRAA Fees */}
             {guideContent.crasFees && (
               <div className='space-y-2'>
@@ -234,7 +238,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* Example Strategy */}
             {guideContent.exampleStrategy && (
               <div className='space-y-2'>
@@ -253,7 +257,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* Tips */}
             {guideContent.tips && (
               <div className='space-y-2'>
@@ -264,7 +268,7 @@ export function WalletConnectNoSSR() {
                 </div>
               </div>
             )}
-            
+
             {/* Vision */}
             {guideContent.vision && (
               <div className='space-y-2'>
@@ -279,7 +283,7 @@ export function WalletConnectNoSSR() {
           </div>
         );
       }
-      
+
       // Fallback
       return <div className='text-slate-300 text-sm'>Game guide content not available</div>;
     } catch (error) {
@@ -300,8 +304,8 @@ export function WalletConnectNoSSR() {
           {t('wallet.connect', 'Connect Wallet')}
         </Button>
       ) : !isApeChain ? (
-          <Button
-            onClick={() => open({ view: 'Networks' })}
+        <Button
+          onClick={() => open({ view: 'Networks' })}
           className='bg-red-600 hover:bg-red-700 text-white border-0'
         >
           <AlertTriangle className='w-4 h-4 mr-2' />
@@ -417,7 +421,7 @@ export function WalletConnectNoSSR() {
                     <div className="bg-amber-500/15 border border-amber-500/30 rounded-lg p-4">
                       <div className="text-amber-300 text-sm space-y-3">
                         <div className="font-semibold text-base">{t('swap.fees.title', '💰 Fees and Slippage:')}</div>
-                        
+
                         <div className="space-y-2">
                           <div className="font-medium">{t('swap.fees.buy.title', '🟢 Buy CRAA (APE → CRAA):')}</div>
                           <div className="text-xs space-y-1 ml-4">
@@ -451,8 +455,8 @@ export function WalletConnectNoSSR() {
                       <div className="text-center">
                         <div className="text-purple-300 text-sm font-medium mb-3">{t('swap.screenshot.title', '📸 Example of Camelot settings:')}</div>
                         <div className="relative">
-                          <img 
-                            src="/images/1234.jpg" 
+                          <img
+                            src="/images/1234.jpg"
                             alt={t('swap.screenshot.alt', 'Camelot settings example')}
                             className="w-full h-auto max-h-[400px] object-contain rounded-lg border border-purple-400/30 shadow-lg"
                             onError={(e) => {
@@ -471,7 +475,7 @@ export function WalletConnectNoSSR() {
                     </div>
 
                     {/* DexScreener button */}
-                    <Button 
+                    <Button
                       onClick={() => safeOpen(DEXSCREENER_LINK)}
                       className="w-full h-12 bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:brightness-110 font-bold flex items-center justify-center gap-2"
                     >
@@ -481,15 +485,15 @@ export function WalletConnectNoSSR() {
 
                     {/* Blinking button */}
                     <motion.div
-                      animate={{ 
-                        boxShadow: isBlinking 
-                          ? '0 0 20px rgba(255, 183, 0, 0.6)' 
-                          : '0 0 0px rgba(255, 183, 0, 0)' 
+                      animate={{
+                        boxShadow: isBlinking
+                          ? '0 0 20px rgba(255, 183, 0, 0.6)'
+                          : '0 0 0px rgba(255, 183, 0, 0)'
                       }}
                       transition={{ duration: 0.5 }}
                       className="rounded-xl overflow-hidden"
                     >
-                      <Button 
+                      <Button
                         onClick={handleBuyClick}
                         className="w-full h-14 text-lg font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-black hover:brightness-110 transition-all duration-300"
                       >

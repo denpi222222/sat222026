@@ -284,7 +284,7 @@ export default function PingPage() {
 
       {/* Cosmic rain of golden cubes - always show */}
       <div className='fixed inset-0 pointer-events-none z-0'>
-        <LightCoinRain count={12} theme="cyan" />
+        <LightCoinRain theme="blue" />
         <ParticleEffect
           count={isMobile ? 8 : 20}
           colors={['#38bdf8', '#06b6d4', '#0ea5e9']}
