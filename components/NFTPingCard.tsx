@@ -34,7 +34,7 @@ import {
 import { parseEther, formatEther } from 'viem';
 import { useMobile } from '@/hooks/use-mobile';
 import { getColor, getLabel } from '@/lib/rarity';
-import CoinBurst from '@/components/CoinBurst';
+// CoinBurst removed - animation simplified
 import { useTranslation } from 'react-i18next';
 import { usePerformanceContext } from '@/hooks/use-performance-context';
 import { useNetwork } from '@/hooks/use-network';
@@ -597,33 +597,33 @@ function NFTPingCardComponent({
 
           {/* Ping button */}
           <div className='px-2 pb-2'>
-            <CoinBurst key={String(nft.tokenId)} total={18} duration={0.8}>
-              <Button
-                variant={pingReady ? 'default' : 'outline'}
-                size='sm'
-                className={
-                  pingReady
-                    ? 'w-full h-7 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500'
-                    : 'w-full h-7 text-xs border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10'
-                }
-                onClick={handlePing}
-                disabled={isProcessing || !pingReady}
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />{' '}
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <SatelliteDish className='mr-2 h-4 w-4' />{' '}
-                    {isActivated
-                      ? t('sections.ping.button', 'Ping')
-                      : t('sections.ping.activate', 'Activate')}
-                  </>
-                )}
-              </Button>
-            </CoinBurst>
+
+            <Button
+              variant={pingReady ? 'default' : 'outline'}
+              size='sm'
+              className={
+                pingReady
+                  ? 'w-full h-7 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500'
+                  : 'w-full h-7 text-xs border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10'
+              }
+              onClick={handlePing}
+              disabled={isProcessing || !pingReady}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />{' '}
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <SatelliteDish className='mr-2 h-4 w-4' />{' '}
+                  {isActivated
+                    ? t('sections.ping.button', 'Ping')
+                    : t('sections.ping.activate', 'Activate')}
+                </>
+              )}
+            </Button>
+
           </div>
         </div>
       </Card>

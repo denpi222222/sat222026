@@ -14,8 +14,8 @@ import { useMobile } from '@/hooks/use-mobile';
 import { TabNavigation } from '@/components/tab-navigation';
 import { useBurnedNfts } from '@/hooks/useBurnedNfts';
 
-const CoinsAnimation = dynamic(
-  () => import('@/components/coins-animation').then(m => m.CoinsAnimation),
+const LightCoinRain = dynamic(
+  () => import('@/components/LightCoinRain').then(m => m.LightCoinRain),
   { ssr: false }
 );
 
@@ -88,7 +88,7 @@ export default function RewardsPage() {
     <div className='min-h-screen relative overflow-hidden text-white'>
       {/* Full screen gradient background */}
       <div className='fixed inset-0 -z-10 bg-gradient-to-br from-amber-900 via-yellow-800 to-amber-900' />
-      <CoinsAnimation intensity={isMobile ? 0.6 : 1.8} />
+      <LightCoinRain count={15} theme="gold" />
       <div className='container mx-auto relative z-10 px-4 py-4 md:py-6 pb-24'>
         <header className='mb-4 flex items-center justify-between mobile-header-fix mobile-safe-layout'>
           <Link href='/'>

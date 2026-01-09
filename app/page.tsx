@@ -48,10 +48,10 @@ const FireAnimation = dynamic(
     })),
   { ssr: false }
 );
-const CoinsAnimation = dynamic(
+const LightCoinRain = dynamic(
   () =>
-    import('@/components/coins-animation').then(m => ({
-      default: m.CoinsAnimation,
+    import('@/components/LightCoinRain').then(m => ({
+      default: m.LightCoinRain,
     })),
   { ssr: false }
 );
@@ -454,7 +454,7 @@ export default function HomePage() {
             {/* Neon reactive aura for Claim */}
             <ReactiveAura tint='amber' intensity={1.1} />
             {/* Gold coins animation */}
-            {<CoinsAnimation />}
+            <LightCoinRain count={12} theme="gold" />
 
             <div className='flex items-center mb-4 relative z-10'>
               <Coins className='w-8 h-8 text-yellow-400 mr-3' />
@@ -488,7 +488,7 @@ export default function HomePage() {
             {/* Neon reactive aura for Ping */}
             <ReactiveAura tint='sky' intensity={1.05} />
             {/* Blue coins animation for ping - always show */}
-            <CoinsAnimation />
+            <LightCoinRain count={12} theme="cyan" />
 
             <div className='flex items-center mb-4 relative z-10'>
               <SatelliteDish className='w-8 h-8 text-cyan-400 mr-3' />

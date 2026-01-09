@@ -22,6 +22,7 @@ import { usePublicClient, useAccount, useConnect } from 'wagmi';
 import { parseEther } from 'viem';
 
 import { BreedCard } from '@/components/BreedCard';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
 import dynamic from 'next/dynamic';
 
 import {
@@ -521,8 +522,8 @@ export default function BreedPage() {
 
   return (
     <div className='min-h-screen mobile-content-wrapper relative overflow-hidden'>
-      {/* Full screen gradient background */}
-      <div className='fixed inset-0 -z-10 bg-gradient-to-br from-pink-900 via-purple-900 to-pink-900' />
+      {/* Animated gradient background */}
+      <AnimatedBackground theme="pink" intensity="medium" />
 
       {/* Background hearts rain */}
       <div className='fixed inset-0 pointer-events-none z-0'>

@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react';
 import { useAccount, useConnect } from 'wagmi';
 import { ParticleEffect } from '@/components/particle-effect';
 import dynamic from 'next/dynamic';
-const CoinsAnimation = dynamic(
-  () => import('@/components/coins-animation').then(m => m.CoinsAnimation),
+const LightCoinRain = dynamic(
+  () => import('@/components/LightCoinRain').then(m => m.LightCoinRain),
   { ssr: false }
 );
 import { Button } from '@/components/ui/button';
@@ -284,7 +284,7 @@ export default function PingPage() {
 
       {/* Cosmic rain of golden cubes - always show */}
       <div className='fixed inset-0 pointer-events-none z-0'>
-        <CoinsAnimation intensity={isMobile ? 0.8 : 1.4} theme='blue' />
+        <LightCoinRain count={12} theme="cyan" />
         <ParticleEffect
           count={isMobile ? 8 : 20}
           colors={['#38bdf8', '#06b6d4', '#0ea5e9']}
