@@ -54,7 +54,7 @@ if (typeof window !== 'undefined') {
             new CustomEvent('crazycube:toast', {
               detail: {
                 title: 'Please switch to ApeChain',
-                description: 'Нажмите Switch Network в кошельке',
+                description: 'Click Switch Network in your wallet',
                 variant: 'destructive',
               },
             })
@@ -85,15 +85,15 @@ if (typeof window !== 'undefined') {
       // Enable injected connectors only on safe browsers
       ...(enableInjected
         ? [
-            metaMask({
-              dappMetadata: {
-                name: 'CrazyCube',
-                url: window.location.origin,
-                iconUrl: 'https://crazycube.xyz/favicon.ico',
-              },
-            }),
-            injected({ shimDisconnect: true }),
-          ]
+          metaMask({
+            dappMetadata: {
+              name: 'CrazyCube',
+              url: window.location.origin,
+              iconUrl: 'https://crazycube.xyz/favicon.ico',
+            },
+          }),
+          injected({ shimDisconnect: true }),
+        ]
         : []),
     ],
     ssr: false,
