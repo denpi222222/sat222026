@@ -32,8 +32,39 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/ui/accordion';
+import {
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useReadContract,
+} from 'wagmi';
+import { apeChain } from '@/config/chains';
 import CubeObservers from '@/components/breeding-cube-observers';
 import { useLiveBredCubes } from '@/hooks/useLiveBredCubes';
+// import { getNFTGameData } from '@/lib/api';
+
+const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000';
+
+// Minimal ABI for fetching NFT stars
+const GAME_PROXY_ABI_STARS = [
+  {
+    type: 'function',
+    name: 'getNFTGameData',
+    inputs: [{ type: 'uint256', name: 'tokenId' }],
+    outputs: [
+      {
+        type: 'tuple',
+        components: [
+          { name: 'currentStars', type: 'uint256' },
+          { name: 'creationTime', type: 'uint256' },
+          { name: 'lastPingTime', type: 'uint256' },
+          { name: 'battlesWon', type: 'uint256' },
+          { name: 'battlesLost', type: 'uint256' },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+  },
+] as const;
 
 import { useGraveyardReadiness } from '@/hooks/useGraveyardReadiness';
 import { formatCRAA, formatSmart } from '@/utils/formatNumber';
@@ -77,6 +108,7 @@ const resolveImageSrc = (nft: any) => {
 
 export default function BreedPage() {
   const { isConnected: connected, address: account } = useAccount();
+  const client = usePublicClient();
   const { connect, connectors } = useConnect();
   const {
     nfts: allNFTs,
@@ -519,8 +551,18 @@ export default function BreedPage() {
       ? 'success'
       : 'idle';
 
+  // Watch for breeding events
+  // Start watching for events when on this page
+  useEffect(() => {
+    startWatching();
+    return () => {
+      stopWatching();
+    };
+  }, [startWatching, stopWatching]);
+
   useEffect(() => {
     if (liveRevived.length > 0) {
+      console.log('[NFT Reveal] liveRevived triggered:', liveRevived);
       // immediately refetch list to show resurrected cube
       refetch();
 
@@ -535,13 +577,22 @@ export default function BreedPage() {
 
           try {
             // Fetch real star count from contract
-            const nftData = await getNFTGameData(newTokenId.toString());
-            const realStars = nftData?.currentStars ?? 1;
+            if (!client) throw new Error('No client');
+
+            const nftData = (await client.readContract({
+              address: apeChain.contracts.gameProxy.address as `0x${string}`,
+              abi: GAME_PROXY_ABI_STARS,
+              functionName: 'getNFTGameData',
+              args: [BigInt(newTokenId)],
+            })) as any;
+
+            const realStars = Number(nftData.currentStars || 1);
 
             setNewBornTokenId(newTokenId);
             setNewBornStars(realStars);
             setRevealModalOpen(true);
-          } catch {
+          } catch (e) {
+            console.error('Failed to fetch stats for new NFT:', e);
             // Fallback if data fetch fails - show with 1 star
             setNewBornTokenId(newTokenId);
             setNewBornStars(1);
