@@ -18,7 +18,8 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from 'react-i18next';
 import { TabNavigation } from '@/components/tab-navigation';
 import { NeonTitle } from '@/components/NeonTitle';
-import { SparkRain } from '@/components/SparkRain';
+// SparkRain removed - causing animation issues on some devices
+// import { SparkRain } from '@/components/SparkRain';
 import { ReactiveAura } from '@/components/ReactiveAura';
 import { WalletConnectNoSSR as WalletConnect } from '@/components/web3/wallet-connect.no-ssr';
 
@@ -202,7 +203,7 @@ export default function HomePage() {
       }}
     >
       {/* Global spark rain overlay (disabled on mobile to avoid layout shifts) */}
-      {!isMobile && <SparkRain />}
+      {/* SparkRain removed - causing issues on laptops */}
       {/* Adding particle effect - reduced quantity */}
       {shouldShowParticles && !isMobile && (
         <ParticleEffect

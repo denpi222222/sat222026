@@ -23,6 +23,7 @@ import { parseEther } from 'viem';
 
 import { BreedCard } from '@/components/BreedCard';
 import { AnimatedBackground } from '@/components/AnimatedBackground';
+import { NFTRevealModal } from '@/components/NFTRevealModal';
 import dynamic from 'next/dynamic';
 
 import {
@@ -85,6 +86,11 @@ export default function BreedPage() {
   const [userNFTs, setUserNFTs] = useState<import('@/types/nft').NFT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // State for NFT reveal modal
+  const [revealModalOpen, setRevealModalOpen] = useState(false);
+  const [newBornTokenId, setNewBornTokenId] = useState<number | null>(null);
+  const [newBornStars, setNewBornStars] = useState(1);
 
   useEffect(() => {
     if (allNFTs) {
@@ -517,8 +523,36 @@ export default function BreedPage() {
     if (liveRevived.length > 0) {
       // immediately refetch list to show resurrected cube
       refetch();
+
+      // Get the newborn NFT tokenId
+      const newTokenId = liveRevived[liveRevived.length - 1];
+      if (typeof newTokenId === 'number' && newTokenId > 0) {
+        // Wait for blockchain to confirm and NFT to arrive in wallet
+        // Then fetch real star data before showing modal
+        const showRevealWithData = async () => {
+          // Wait 4 seconds for blockchain confirmation and data sync
+          await new Promise(resolve => setTimeout(resolve, 4000));
+
+          try {
+            // Fetch real star count from contract
+            const nftData = await getNFTGameData(newTokenId.toString());
+            const realStars = nftData?.currentStars ?? 1;
+
+            setNewBornTokenId(newTokenId);
+            setNewBornStars(realStars);
+            setRevealModalOpen(true);
+          } catch {
+            // Fallback if data fetch fails - show with 1 star
+            setNewBornTokenId(newTokenId);
+            setNewBornStars(1);
+            setRevealModalOpen(true);
+          }
+        };
+
+        showRevealWithData();
+      }
     }
-  }, [liveRevived, refetch]);
+  }, [liveRevived, refetch, getNFTGameData]);
 
   return (
     <div className='min-h-screen mobile-content-wrapper relative overflow-hidden'>
@@ -827,7 +861,7 @@ export default function BreedPage() {
                       disabled={
                         isBreeding || isTxLoading || !canBreedSelectedNFTs()
                       }
-                      className='w-full max-w-xs mx-auto bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-4 py-3 disabled:opacity-50 disabled:cursor-not-allowed container-adaptive'
+                      className='w-full max-w-xs mx-auto bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-4 py-3 disabled:opacity-50 disabled:cursor-not-allowed container-adaptive breed-button-premium'
                     >
                       {isBreeding ? (
                         <span className='adaptive-text-lg flex items-center justify-center'>
@@ -968,6 +1002,17 @@ export default function BreedPage() {
           onComplete={() => setShowBreedingEffect(false)}
         />
       )}
+
+      {/* NFT Reveal Modal - shows when new NFT is born */}
+      <NFTRevealModal
+        isOpen={revealModalOpen}
+        onClose={() => {
+          setRevealModalOpen(false);
+          setNewBornTokenId(null);
+        }}
+        tokenId={newBornTokenId}
+        stars={newBornStars}
+      />
     </div>
   );
 }

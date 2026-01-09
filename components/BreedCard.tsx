@@ -35,7 +35,7 @@ const resolveImageSrc = (nft: any, fallbackUrl?: string) => {
   try {
     // Extract tokenId
     const tokenId = extractTokenId(nft);
-    
+
     if (tokenId) {
       // ✅ Use local image (instant loading from /public/nft/)
       const localImage = getLocalNFTImage(tokenId);
@@ -43,7 +43,7 @@ const resolveImageSrc = (nft: any, fallbackUrl?: string) => {
         return localImage; // /nft/0023.webp
       }
     }
-    
+
     // ❌ Fallback to IPFS (should not happen with 5000 local images)
     if (fallbackUrl) {
       if (fallbackUrl.startsWith('ipfs://')) {
@@ -51,7 +51,7 @@ const resolveImageSrc = (nft: any, fallbackUrl?: string) => {
       }
       return fallbackUrl;
     }
-    
+
     return '/favicon.ico';
   } catch (error) {
     return fallbackUrl || '/favicon.ico';
@@ -125,9 +125,9 @@ export const BreedCard = React.memo(function BreedCard({
 
   const ringClass =
     selectedOrder === 1
-      ? 'ring-4 ring-pink-500/70 animate-pulse'
+      ? 'ring-4 ring-pink-500/70 gentle-ring text-pink-500'
       : selectedOrder === 2
-        ? 'ring-4 ring-purple-500/70 animate-pulse'
+        ? 'ring-4 ring-purple-500/70 gentle-ring text-purple-500'
         : '';
 
   const finalDisabled =
@@ -139,10 +139,10 @@ export const BreedCard = React.memo(function BreedCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       className={cn(
-        'relative overflow-hidden transition-all duration-300 group cursor-pointer',
+        'relative overflow-hidden transition-all duration-300 group cursor-pointer breed-card',
         'hover:shadow-2xl hover:scale-105 hover:-translate-y-1',
         'bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-700/30',
-        selected && 'ring-2 ring-purple-500 shadow-purple-500/50',
+        selected && 'ring-2 ring-purple-500 shadow-purple-500/50 breed-selected',
         disableSelect && 'opacity-50 cursor-not-allowed',
         isMobile && 'hover:scale-100 hover:translate-y-0'
       )}
@@ -164,7 +164,7 @@ export const BreedCard = React.memo(function BreedCard({
               'name' in nft && nft.name
                 ? nft.name
                 : 'title' in nft &&
-                    typeof (nft as { title?: string }).title === 'string'
+                  typeof (nft as { title?: string }).title === 'string'
                   ? (nft as { title: string }).title
                   : `Cube #${tokenIdDisplay}`
             }
@@ -205,10 +205,10 @@ export const BreedCard = React.memo(function BreedCard({
             >
               <div className='relative'>
                 {/* Glowing background */}
-                <div className='absolute inset-0 bg-red-500/60 rounded-xl blur-lg animate-pulse'></div>
+                <div className='absolute inset-0 bg-red-500/60 rounded-xl blur-lg smooth-glow text-red-500'></div>
                 {/* Main text with multiple borders */}
                 <div className='relative bg-gradient-to-r from-red-600 to-orange-600 text-white text-3xl font-black px-3 py-1.5 rounded-xl border-3 border-yellow-400 shadow-2xl'>
-                  <div className='absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-lg animate-pulse'></div>
+                  <div className='absolute inset-0 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-lg soft-pulse'></div>
                   <span
                     className='relative drop-shadow-2xl'
                     style={{

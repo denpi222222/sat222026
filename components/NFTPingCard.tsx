@@ -481,7 +481,7 @@ function NFTPingCardComponent({
               )}
               {/* Auto-refresh indicator */}
               <div className='flex items-center justify-center mt-1'>
-                <div className='w-0.5 h-0.5 rounded-full bg-blue-400 animate-pulse'></div>
+                <div className='w-0.5 h-0.5 rounded-full bg-blue-400 live-dot'></div>
                 <span className='text-[7px] text-blue-300 ml-1'>
                   {t('sections.ping.live', 'Live')}
                 </span>
@@ -535,9 +535,9 @@ function NFTPingCardComponent({
                     parseFloat(
                       formatCRADisplay(displayPendingWei)
                     ) > 0
-                    ? 'text-lime-300 font-bold bg-lime-900/30 px-1 rounded animate-pulse'
+                    ? 'text-lime-300 font-bold bg-lime-900/30 px-1 rounded glow-text'
                     : isActivated
-                      ? 'text-lime-200 animate-pulse'
+                      ? 'text-lime-200 glow-text'
                       : 'text-lime-100'
                 )}
               >
@@ -570,7 +570,7 @@ function NFTPingCardComponent({
                 className={cn(
                   'font-mono ml-2 text-right truncate max-w-[60%]',
                   hasActiveCooldown && parseFloat(lockedCRAA.toString()) > 0
-                    ? 'text-purple-300 font-bold bg-purple-900/30 px-1 rounded animate-pulse'
+                    ? 'text-purple-300 font-bold bg-purple-900/30 px-1 rounded glow-text'
                     : 'text-purple-100'
                 )}
               >

@@ -127,11 +127,12 @@ export function LightCoinRain({
           }
         }
 
-        /* Reduce motion for users who prefer it */
+        /* When reduced motion is preferred, show coins at fixed positions */
         @media (prefers-reduced-motion: reduce) {
           .light-coin {
             animation: none;
-            opacity: 0;
+            transform: translateY(50vh);
+            opacity: 0.4;
           }
         }
       `}</style>
